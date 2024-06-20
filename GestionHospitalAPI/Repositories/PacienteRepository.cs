@@ -1,13 +1,12 @@
 ﻿using Dapper;
-using GestionHospital.Models;
-using GestionHospitalAPI.Model;
+using GestionHospitalAPI.Model.DTO.Request;
+using GestionHospitalAPI.Model.DTO.Response;
 using MySql.Data.MySqlClient;
 
 namespace GestionHospitalAPI.Repositories;
 
 public class PacienteRepository : IPacienteRepository
 {
-    //private readonly Model.MySqlConfiguration _mySqlConfiguration;
     private readonly MySqlConnection _mySqlConnection;
 
     public PacienteRepository(MySqlConnection mySqlConnection)
@@ -15,10 +14,6 @@ public class PacienteRepository : IPacienteRepository
         _mySqlConnection = mySqlConnection;
     }
 
-    //protected MySqlConnection DbConnection()
-    //{
-    //    return new MySqlConnection(_mySqlConfiguration.ConnectionString);
-    //}
     public async Task<bool> BorrarPaciente(int idPaciente)
     {
         string query = @"DELETE FROM pacientes WHERE Id = @Id";
@@ -28,19 +23,31 @@ public class PacienteRepository : IPacienteRepository
         return result > 0;
     }
 
-    public async Task<Paciente> CrearPaciente(Paciente paciente)
+    public async Task<PacienteResponse> CrearPaciente(PacienteRequest paciente)
     {
         string query = @"INSERT INTO pacientes(DNI, Nombre, Apellido, FechaNacimiento, Sexo, Telefono, Email)
-                         VALUES(@DNI, @Nombre, @Apellido, @FechaNacimiento, @Sexo, @Telefono, @Email)";
+                         VALUES(@DNI, @Nombre, @Apellido, @FechaNacimiento, @Sexo, @Telefono, @Email);
+                         SELECT LAST_INSERT_ID()";
 
-        var result = await _mySqlConnection.ExecuteAsync(query, new { paciente.DNI, paciente.Nombre, paciente.Apellido,
+        var result = await _mySqlConnection.QuerySingleAsync<int>(query, new { paciente.DNI, paciente.Nombre, paciente.Apellido,
             paciente.FechaNacimiento, paciente.Sexo, paciente.Telefono, paciente.Email});
 
-        paciente.Id = result;
-        return paciente;
+        PacienteResponse pacienteResponse = new ()
+        {
+            Id = result,
+            DNI = paciente.DNI,
+            Nombre = paciente.Nombre,
+            Apellido = paciente.Apellido,
+            FechaNacimiento = paciente.FechaNacimiento,
+            Sexo = paciente.Sexo,
+            Telefono = paciente.Telefono,
+            Email = paciente.Email
+        };
+
+        return pacienteResponse;
     }
 
-    public async Task<Paciente> EditarPaciente(Paciente paciente)
+    public async Task<PacienteResponse> EditarPaciente(PacienteRequest paciente, int id)
     {
         string query = @"UPDATE pacientes
                             SET DNI = @DNI,
@@ -50,9 +57,10 @@ public class PacienteRepository : IPacienteRepository
                                 Sexo = @Sexo,
                                 Telefono = @Telefono,
                                 Email = @Email
-                         WHERE Id = @Id";
+                         WHERE Id = @Id;
+                         SELECT Id FROM pacientes ORDER BY Id DESC LIMIT 1";
 
-        var result = await _mySqlConnection.ExecuteAsync(query, new
+        var result = await _mySqlConnection.QuerySingleAsync<int>(query, new
         {
             paciente.DNI,
             paciente.Nombre,
@@ -61,23 +69,35 @@ public class PacienteRepository : IPacienteRepository
             paciente.Sexo,
             paciente.Telefono,
             paciente.Email,
-            paciente.Id
+            Id = id,
         });
 
-        return paciente;
+        PacienteResponse pacienteResponse = new ()
+        {
+            Id = result,
+            DNI = paciente.DNI,
+            Nombre = paciente.Nombre,
+            Apellido = paciente.Apellido,
+            FechaNacimiento = paciente.FechaNacimiento,
+            Sexo = paciente.Sexo,
+            Telefono = paciente.Telefono,
+            Email = paciente.Email
+        };
+
+        return pacienteResponse;
     }
 
-    public async Task<Paciente> Paciente(int idPaciente)
+    public async Task<PacienteResponse> Paciente(int idPaciente)
     {
         string query = @"SELECT * FROM pacientes WHERE Id = @Id";
 
-        return await _mySqlConnection.QueryFirstOrDefaultAsync<Paciente>(query, new { Id = idPaciente});
+        return await _mySqlConnection.QueryFirstOrDefaultAsync<PacienteResponse>(query, new { Id = idPaciente});
     }
 
-    public async Task<IEnumerable<Paciente>> Pacientes()
+    public async Task<IEnumerable<PacienteResponse>> Pacientes()
     {
         string query = @"SELECT * FROM pacientes";
 
-        return await _mySqlConnection.QueryAsync<Paciente>(query, new { });
+        return await _mySqlConnection.QueryAsync<PacienteResponse>(query, new { });
     }
 }

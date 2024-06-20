@@ -1,6 +1,5 @@
-﻿using GestionHospital.Models;
+﻿using GestionHospitalAPI.Model.DTO.Request;
 using GestionHospitalAPI.Repositories;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GestionHospitalAPI.Controllers;
@@ -29,7 +28,7 @@ public class PacientesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CrearPaciente([FromBody] Paciente paciente)
+    public async Task<IActionResult> CrearPaciente([FromBody] PacienteRequest paciente)
     {
         if (paciente is null)
             return BadRequest();
@@ -41,8 +40,8 @@ public class PacientesController : ControllerBase
         return Created("created", created);
     }
 
-    [HttpPut]
-    public async Task<IActionResult> EditarPaciente([FromBody] Paciente paciente)
+    [HttpPut("{Id}")]
+    public async Task<IActionResult> EditarPaciente(int Id, [FromBody] PacienteRequest paciente)
     {
         if (paciente is null)
             return BadRequest();
@@ -50,7 +49,13 @@ public class PacientesController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var created = await _pacienteRepository.EditarPaciente(paciente);
+        var created = await _pacienteRepository.EditarPaciente(paciente, Id);
         return Ok(created);
+    }
+
+    [HttpDelete("{Id}")]
+    public async Task<IActionResult> BorrarPaciente(int Id)
+    {
+        return Ok(await _pacienteRepository.BorrarPaciente(Id));
     }
 }

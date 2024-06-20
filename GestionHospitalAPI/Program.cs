@@ -15,6 +15,8 @@ builder.Services.AddSwaggerGen();
 //var mySqlConfiguration = new MySqlConfiguration(builder.Configuration.GetConnectionString("MySqlConnection"));
 builder.Services.AddSingleton(new MySqlConnection(builder.Configuration.GetConnectionString("MySqlConnection")));
 builder.Services.AddScoped<IPacienteRepository,PacienteRepository>();
+builder.Services.AddScoped <IMedicoRepository, MedicoRepository>();
+builder.Services.AddScoped<IDiagnosticoRepository, DiagnosticoRepository>();
 
 var app = builder.Build();
 
