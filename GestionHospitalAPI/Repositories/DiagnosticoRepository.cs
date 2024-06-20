@@ -52,20 +52,19 @@ public class DiagnosticoRepository : IDiagnosticoRepository
 
     public async Task<DiagnosticoFullResponse> Diagnostico(int idDiagnostico)
     {
-        string query = @"SELECT d.Id, d.Fecha, d.Diagnostico, d.PacienteId, d.MedicoId, p.Apellido + ', ' + p.Nombre AS NombrePaciente
-	                        , m.Apellido + ', ' + m.Nombre AS NombreMedico
+        string query = @"SELECT d.Id, d.Fecha, d.Diagnostico, d.PacienteId, CONCAT(p.Apellido, "", "", p.Nombre) AS NombrePaciente
+	                        , d.MedicoId, CONCAT(m.Apellido, "", "", m.Nombre) AS NombreMedico
                          FROM diagnosticos AS d
 	                         INNER JOIN pacientes AS p ON d.PacienteId = p.ID
 	                         INNER JOIN medicos AS m ON m.ID = d.MedicoId
                          WHERE d.Id = @Id";
-
         return await _mySqlConnection.QueryFirstOrDefaultAsync<DiagnosticoFullResponse>(query, new { Id = idDiagnostico });
     }
 
     public async Task<IEnumerable<DiagnosticoFullResponse>> Diagnosticos()
     {
-        string query = @"SELECT d.Id, d.Fecha, d.Diagnostico, d.PacienteId, d.MedicoId, p.Apellido + ', ' + p.Nombre AS NombrePaciente
-	                        , m.Apellido + ', ' + m.Nombre AS NombreMedico
+        string query = @"SELECT d.Id, d.Fecha, d.Diagnostico, d.PacienteId, CONCAT(p.Apellido, "", "", p.Nombre) AS NombrePaciente
+	                        , d.MedicoId, CONCAT(m.Apellido, "", "", m.Nombre) AS NombreMedico
                          FROM diagnosticos AS d
 	                         INNER JOIN pacientes AS p ON d.PacienteId = p.ID
 	                         INNER JOIN medicos AS m ON m.ID = d.MedicoId";
